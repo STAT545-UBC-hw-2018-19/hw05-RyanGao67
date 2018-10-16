@@ -15,6 +15,7 @@ suppressPackageStartupMessages(library(tidyverse))
 suppressPackageStartupMessages(library(forcats))
 ## load plotly
 suppressPackageStartupMessages(library(plotly))
+suppressPackageStartupMessages(library(dplyr))
 ```
 
 # Part 1: Factor management
@@ -22,7 +23,53 @@ suppressPackageStartupMessages(library(plotly))
 * Elaboration for the gapminder data set
 * Drop Oceania. Filter the Gapminder data to remove observations associated with the continent of Oceania. Additionally, remove unused factor levels. Provide concrete information on the data before and after removing these rows and Oceania; address the number of rows and the levels of the affected factors.
 
+* First let's see the levels of gapminder.
+```{r}
+levels(gapminder$continent)
+```
+
+* Then I'll show the rows of a gapminder
+```{r}
+nrow(gapminder) 
+```
+
+* Then let's drop Ocania
+```{r}
+drop <- gapminder %>% 
+  filter(continent %in%  c("Europe", "Africa", "Asia", "Americas"))
+levels(drop$continent)
+```
+
+* We can see that the continent of Oceania is unchanged. To fix this we need to use droplevels()
+```{r}
+dropped <- drop %>%
+  droplevels()
+
+levels(dropped$continent)
+```
+
+* Then I'll address the number of rows and the levels of continent before and after removing Oceania.
+```{r}
+# before 
+nrow(gapminder)
+nlevels(gapminder$continent)
+# after
+nrow(dropped)
+nlevels(dropped$continent)
+```
+* From the above discussion, we can see that the number of rows before dropping Oceania is 1704 and the continent level is 5, the number of rows after dropping oceania is 1680 and continent level is 4.
+
 * Reorder the levels of country or continent. Use the forcats package to change the order of the factor levels, based on a principled summary of one of the quantitative variables. Consider experimenting with a summary statistic beyond the most basic choice of the median.
+ * First of all let's show the dropped gapminder
+```{r}
+dropped %>%
+  head(15) %>%
+  knitr::kable()
+```
+
+* We can see that the data frame is ordered by country in alphabetical order. 
+
+
 
 
 # Part 2: File I/O
