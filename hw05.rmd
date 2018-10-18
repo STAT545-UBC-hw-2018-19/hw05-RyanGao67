@@ -16,6 +16,11 @@ suppressPackageStartupMessages(library(forcats))
 ## load plotly
 suppressPackageStartupMessages(library(plotly))
 suppressPackageStartupMessages(library(dplyr))
+suppressPackageStartupMessages(library(tidyverse))
+library(gapminder)
+library(knitr)
+suppressPackageStartupMessages(library(scales))
+suppressPackageStartupMessages(library(plotly))
 ```
 
 # Part 1: Factor management
@@ -69,17 +74,136 @@ dropped %>%
 
 * We can see that the data frame is ordered by country in alphabetical order. 
 
+* I'll take a look on asia, in 1970
+```{r}
+asia1972 <- gapminder %>%
+  filter(year == 1972, continent == "Asia")
 
+asia1972 %>%
+  head(20) %>%
+  kable()
+```
 
+* Here I want to arrange the table ordered by gdpPerCap
+```{r}
+asia1972 %>%
+  arrange(gdpPercap) %>%
+  mutate(country = fct_reorder(country, gdpPercap)) %>%
+  head(20) %>%
+  kable()
+```
+
+```{r}
+asia1972 %>%
+  arrange(gdpPercap) %>%
+  mutate(country = fct_reorder(country, gdpPercap)) %>%
+  # show preview of resultant levels
+  ggplot(aes(x = gdpPercap, y=country), color = country) +
+  # make it a scatterplot
+  geom_point() + 
+  # scale x axis by log10
+  scale_x_log10() +
+  # change axis labels
+  xlab("LifeExpectency") +
+  ylab("country") +
+  # change theme
+  theme_bw()
+```
+* Conclusion, We need both arrange for table and fct_roder for plot
 
 # Part 2: File I/O
 * Experiment with one or more of write_csv()/read_csv() (and/or TSV friends), saveRDS()/readRDS(), dput()/dget(). Create something new, probably by filtering or grouped-summarization of Singer or Gapminder. I highly recommend you fiddle with the factor levels, i.e. make them non-alphabetical (see previous section). Explore whether this survives the round trip of writing to file then reading back in.
 
+* In this part I'll use the data from last question. 
+* Let's check the I/O
+* write_csv()/read_csv()
+```{r}
+write_csv(asia1972,"gap_asia1972.csv")
+
+read_csv("gap_asia1972.csv") %>%
+  head(20) %>%
+  knitr::kable()
+```
+
+* saveRDS()/readRDS()
+```{r}
+# save to rds
+saveRDS(asia1972,"gap_asia1972.rds")
+
+# read from rds
+readRDS("gap_asia1972.rds") %>%
+    head(20) %>%
+  knitr::kable()
+```
+
+* dput()/dget()
+```{r}
+# save to rds
+dput(asia1972,"gap_asia1972.txt")
+
+# read from rds
+dget("gap_asia1972.txt") %>%
+    head(20) %>%
+  knitr::kable()
+```
+
+* conclusion: Using CSV format, R is required to parse clumn to default format. The data however keeps unchanged. saveRDS and readRDS can keep both data and classes of each column.dput() and dget() can keep both data and classes of each column. 
+
 # Part 3: Visualization design
 * Remake at least one figure or create a new one, in light of something you learned in the recent class meetings about visualization design and color. Maybe juxtapose your first attempt and what you obtained after some time spent working on it. Reflect on the differences. If using Gapminder, you can use the country or continent color scheme that ships with Gapminder. Consult the dimensions listed in All the Graph Things.
+* For this part I'll remake a figure. 
 
+```{r}
+gapminder %>%
+  filter(continent == "Americas") %>%
+  ggplot(aes(x = lifeExp, y = gdpPercap)) +
+  geom_point() +
+  scale_y_log10()
+```
+
+* From the  above plot we can see the rough relation between lifeExp and gdpPercap. 
+* I'll try to edit a new version to reflect more dimensions other than lifeExp and gdpPercap
+
+```{r}
+gapminder %>%
+  filter(continent == "Americas") %>%
+  ggplot(aes(x = lifeExp, y = gdpPercap, colour = country)) +
+  geom_point() +
+  scale_y_log10(label = dollar_format())+
+  theme_bw() + # change theme
+  ylab("GDP per capita") + # change title on Y axis
+  xlab("Life Expectancy") #change title on X axis
+```
+* This is the new version, I'll add another dimension to the plot which is the country. From the new version, we can see clearly that the trend of GDP per capita versus Life Expectancy in different countries. Also adding the dollar sign could make it more readable for us.
 
 * Then, make a new graph by converting this visual (or another, if you¡¯d like) to a plotly graph. What are some things that plotly makes possible, that are not possible with a regular ggplot2 graph?
+
+* For this one I'll convert the above plot to plotly. 
+```{r}
+plot <-gapminder %>%
+  filter(continent == "Americas") %>%
+  ggplot(aes(x = lifeExp, y = gdpPercap)) +
+  geom_point() +
+  scale_y_log10()
+
+ggplotly(plot)
+```
+* From the plotly above, we can see that when I can hover over the points to see the detailed information of that point.
+* Also, I can zoom in by dragging a box in the plot. 
+```{r}
+gapminder %>%
+  filter(continent == "Americas") %>%
+  plot_ly(x = ~lifeExp,
+          y= ~gdpPercap, 
+          z= ~country, 
+          color = ~country,
+          type = "scatter3d",
+          mode = "markers") %>%
+    layout(scene = list(xaxis = list(type = "log"))) #log z
+```
+
+* The above plot spread the 2-demension version to a 3-demension one. Once again, we can see that we can interact with the point here and drag the plot to view it in different angles. 
+
 
 # Part 4: Writing figures to file
 Use ggsave() to explicitly save a plot to file. Then use  to load and embed it in your report. You can play around with various options, such as:
