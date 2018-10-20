@@ -62,6 +62,7 @@ nlevels(gapminder$continent)
 nrow(dropped)
 nlevels(dropped$continent)
 ```
+
 * From the above discussion, we can see that the number of rows before dropping Oceania is 1704 and the continent level is 5, the number of rows after dropping oceania is 1680 and continent level is 4.
 
 * Reorder the levels of country or continent. Use the forcats package to change the order of the factor levels, based on a principled summary of one of the quantitative variables. Consider experimenting with a summary statistic beyond the most basic choice of the median.
@@ -109,6 +110,7 @@ asia1972 %>%
   # change theme
   theme_bw()
 ```
+
 * Conclusion, We need both arrange for table and fct_roder for plot
 
 # Part 2: File I/O
