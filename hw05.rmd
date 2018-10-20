@@ -186,20 +186,20 @@ plot <-gapminder %>%
   geom_point() +
   scale_y_log10()
 
-ggplotly(plot)
+# ggplotly(plot)
 ```
 * From the plotly above, we can see that when I can hover over the points to see the detailed information of that point.
 * Also, I can zoom in by dragging a box in the plot. 
 ```{r}
-gapminder %>%
-  filter(continent == "Americas") %>%
-  plot_ly(x = ~lifeExp,
-          y= ~gdpPercap, 
-          z= ~country, 
-          color = ~country,
-          type = "scatter3d",
-          mode = "markers") %>%
-    layout(scene = list(xaxis = list(type = "log"))) #log z
+#gapminder %>%
+ # filter(continent == "Americas") %>%
+  #plot_ly(x = ~lifeExp,
+  #        y= ~gdpPercap, 
+   #       z= ~country, 
+    #      color = ~country,
+     #     type = "scatter3d",
+      #    mode = "markers") %>%
+   # layout(scene = list(xaxis = list(type = "log"))) #log z
 ```
 
 * The above plot spread the 2-demension version to a 3-demension one. Once again, we can see that we can interact with the point here and drag the plot to view it in different angles. 
@@ -211,3 +211,20 @@ Use ggsave() to explicitly save a plot to file. Then use  to load and embed it i
 * Arguments of ggsave(), such as width, height, resolution or text scaling.
 Various graphics devices, e.g. a vector vs. raster format.
 Explicit provision of the plot object p via ggsave(..., plot = p). Show a situation in which this actually matters.
+* For this part I'll save a previous plot in jpg and png
+```{r}
+gapminder %>%
+  filter(continent == "Americas") %>%
+  ggplot(aes(x = lifeExp, y = gdpPercap, colour = country)) +
+  geom_point() +
+  scale_y_log10(label = dollar_format())+
+  theme_bw() + # change theme
+  ylab("GDP per capita") + # change title on Y axis
+  xlab("Life Expectancy") #change title on X axis
+```
+```{r}
+ggsave("Population_plot.jpg")
+```
+```{r}
+ggsave("Population_plot.png")
+```
